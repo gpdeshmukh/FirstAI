@@ -1,5 +1,6 @@
 import "./App.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 function App() {
   const [title, setTitle] = useState("");
@@ -10,9 +11,25 @@ function App() {
   const [products, setProducts] = useState([]);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
 
- function addProduct() {
+  async function getProducts() {
+    try {
+      const response = await axios.get("http://localhost:5000/products");
+
+      console.log(response.data);
+
+      setProducts(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getProducts();
+  }, []);
+
+  function addProduct() {
   if (
     title === "" ||
     information === "" ||
@@ -24,46 +41,62 @@ function App() {
   }
 
   const newProduct = {
-    id: Date.now(),
-    title: title,
-    information: information,
-    price: price,
-    company: company,
+    title,
+    information,
+    price,
+    company,
   };
 
   if (isEditing) {
-    const updatedProducts = [...products];
+    axios
+      .put(`http://localhost:5000/products/${editId}`, newProduct)
+      .then(() => {
+        getProducts();
 
-    updatedProducts[editIndex] = newProduct;
+        setIsEditing(false);
+        setEditId(null);
 
-    setProducts(updatedProducts);
-
-    setIsEditing(false);
-    setEditIndex(null);
+        setTitle("");
+        setInformation("");
+        setPrice("");
+        setCompany("");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   } else {
-    setProducts([...products, newProduct]);
-  }
+    axios
+      .post("http://localhost:5000/products", newProduct)
+      .then(() => {
+        getProducts();
 
-  setTitle("");
-  setInformation("");
-  setPrice("");
-  setCompany("");
+        setTitle("");
+        setInformation("");
+        setPrice("");
+        setCompany("");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 }
-  function deleteProduct(index) {
-    const updatedProducts = products.filter((product, i) => i !== index);
+  async function deleteProduct(id) {
+    try {
+      await axios.delete(`http://localhost:5000/products/${id}`);
 
-    setProducts(updatedProducts);
+      getProducts();
+    } catch (error) {
+      console.log(error);
+    }
   }
-  function editProduct(index) {
-    const product = products[index];
-
+  function editProduct(product) {
     setTitle(product.title);
     setInformation(product.information);
     setPrice(product.price);
     setCompany(product.company);
 
     setIsEditing(true);
-    setEditIndex(index);
+    setEditId(product._id);
   }
   return (
     <div className="container">
@@ -131,15 +164,17 @@ function App() {
 
         <tbody>
           {products.map((product, index) => (
-            <tr key={product.id}>
+            <tr key={product._id}>
               <td>{product.title}</td>
               <td>{product.information}</td>
               <td>{product.price}</td>
               <td>{product.company}</td>
 
               <td>
-                <button onClick={() => editProduct(index)}>Edit</button>
-                <button onClick={() => deleteProduct(index)}>Delete</button>
+                <button onClick={() => editProduct(product)}>Edit</button>
+                <button onClick={() => deleteProduct(product._id)}>
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
