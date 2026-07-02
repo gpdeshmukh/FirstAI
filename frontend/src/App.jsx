@@ -15,7 +15,7 @@ function App() {
 
   async function getProducts() {
     try {
-      const response = await axios.get("http://localhost:5000/products");
+      const response = await axios.get("https://firstai-i3f2.onrender.com/products");
 
       console.log(response.data);
 
@@ -49,7 +49,7 @@ function App() {
 
   if (isEditing) {
     axios
-      .put(`http://localhost:5000/products/${editId}`, newProduct)
+      .put(`https://firstai-i3f2.onrender.com/products/${editId}`, newProduct)
       .then(() => {
         getProducts();
 
@@ -66,7 +66,7 @@ function App() {
       });
   } else {
     axios
-      .post("http://localhost:5000/products", newProduct)
+      .post("https://firstai-i3f2.onrender.com/products", newProduct)
       .then(() => {
         getProducts();
 
@@ -82,7 +82,7 @@ function App() {
 }
   async function deleteProduct(id) {
     try {
-      await axios.delete(`http://localhost:5000/products/${id}`);
+      await axios.delete(`https://firstai-i3f2.onrender.com/products/${id}`);
 
       getProducts();
     } catch (error) {
