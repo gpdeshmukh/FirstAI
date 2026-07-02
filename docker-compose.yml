@@ -1,0 +1,30 @@
+services:
+
+  mongodb:
+    image: mongo:7
+    container_name: firstai-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: firstai-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/firstai
+    depends_on:
+      - mongodb
+
+  frontend:
+    build: ./frontend
+    container_name: firstai-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  mongodb_data:
